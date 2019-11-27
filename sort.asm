@@ -1,74 +1,82 @@
-// Trabalho final de Organização e Arquitetura de Computadores 2/2019
-// Professora: Carla Koike
-// Alunos:
-// João Pedro Assis dos Santos - 17/0146367
-// Estevam Galvão Albuquerque - 16/0005663
-// Patrick Vitas Reguera Beal - 15/0143672
-// Iuri Cardoso Araújo - 12/0013606
-
-
-.eqv N 10
+.eqv size 4
 
 .data
-vetor: .word 10, 9, 8, 7, 6, 5, 4, 3, 2, 1
-newl:	.asciiz "\n"
-tab:	.asciiz "\t"
-TEXTO1: .asciiz "\nShow:\n"
-TEXTO2: .asciiz "\nSort:\n"
-pt:	.asciiz "."
+vetor:  .word 3, 2, 1, 4, 6
 
-.text
-
-main:
-	LDA X9, vetor		// Load vector address into X9 register
-	ADDI X10, XZR, N	// Load vector size into X10 register
-	BL show
+.text	
+MAIN:
+	//**********
+	//X1 -> ENDEREÇO DO VETOR
+	//X2 -> CONTADOR
+	//X3 -> ELEMENTO N
+	//X4 -> ELEMENTO N+1
+	//X5 -> RESULTADO DA SUBTRAÇÃO
+	//X6 -> FLAG DE NEGATIVO
+	//X7 -> FLAG SE HOUVE TROCA
+	//X8 -> AUX
+	//**********
 	
-	LDA X0,vetor
-	ADDI X1,XZR,N
-	BL sort
-
-	LDA X9,vetor
-	ADDI X10,XZR,N
-	BL show	
+	//ADD X1, XZR, XZR
+	LDA X1, vetor
+	ADDI X2, XZR, size
 	
+	ADD X7, XZR, XZR
+	
+LOOP:
+	LDUR X3, [X1, 0] //CARREGO N
+	//LDUR X4, [X1, 8] //CARREGO N+1
+	LDUR X4, [X1, 4] //CARREGO N+1
+	
+	
+	SUB X5, X3, X4 //SUBTRAIO N+1 DE N
+	LSR X6, X5, 31 //BUSCO O ÚLTIMO BIT DO RESULTADO
+	
+	CBZ X6, 5//calcular imediato //SE O ÚLTIMO BIT FOR 0, SIGNIFICA QUE O RESULTADO É POSITIVO -> PRECISAMOS TROCAR
+
+RETLOOP:
+
+//	ADDI X1, X1, 8 //INCREMENTO O ENDEREÇO
+	ADDI X1, X1, 4 //INCREMENTO O ENDEREÇO
+		
+	SUBI X2, X2, 1 //DECREMENTANDO CONTADOR
+	
+	CBZ X2, AUX //VERIFICANDO SE ESTAMOS NO FINAL DO VETOR
+	
+	B LOOP
+
+
+SWAP:
+	ADD X0, XZR, X3 //COPIO VALOR DE N PARA X0
+	
+	//ADDI X8, X1, 8	//COPIO O ENDEREÇO DE N+1 PARA X8
+	ADDI X8, X1, 4	//COPIO O ENDEREÇO DE N+1 PARA X8
+	
+	STUR X0, [X8, 0] //SALVO O VALOR DE "N" NO ENDEREÇO DE N+1
+	
+	ADD X0, XZR, X4 //COPIO O VALOR DE N+1 PARA X0
+	
+	ADDI X8, X1, 0 //COPIO O ENDEREÇO DE N PARA X8
+	
+	STUR X0, [X8, 0] //SALVO O VALOR DE "N+1" NO ENDEREÇO DE N
+	
+	ADDI X7, XZR, 1
+	
+	B RETLOOP
+
+AUX:
+	SUBI X8, X7, 1
+	CBZ X8, EXITLOOP
+	
+	B END //VETOR ESTÁ ORDENADO
+
+EXITLOOP:
+	
+	ADD X1, XZR, XZR
+	ADDI X2, XZR, size
+	
+	B LOOP
+	
+END:
 	ADDI X8,XZR,#10
 	SVC 0
-	
-sort:
-	ORR X21,XZR,X0		// Copying vector adress to X21
-	ORR X22,XZR,X1		// Copying vector size to X22
-	
-	ORR X19,XZR,XZR		// X19 = 0 (i.e int i = 0)
-	
-for1:	
-	SUBS X23,X19,X22	// N - i
-	CBZ X23, exit
-	BR X30
-	
-	
-show:	LDA X7,TEXTO1
-	ADDI X8,XZR,#4
-	SVC 0
-	ADD X1,X9,XZR
-	ADD X2,X10,XZR
-	ADD X3,XZR,XZR
-	
-loop1:  SUBS X4,X2,X3
-        B.EQ fim1
-	ADDI X8,XZR,#1
-	ADD  X20,X9,XZR
-	LDUR X7,[X20,#0]
-	SVC  0
-        LDA X7,tab
-	ADDI X8,XZR,#4
-	SVC 0	
-	ADDI X9,X9,#4
-	ADDI X3,X3,#1	
-        B loop1
-        
-fim1:	LDA X7,newl
-	ADDI X8,XZR,#4
-	SVC 0	
-	BR  X30
-	
+	//VETOR ORDENADO
