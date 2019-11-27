@@ -1,7 +1,7 @@
-.eqv size 4
+.eqv size 9
 
 .data
-vetor:  .word 3, 2, 1, 4, 6
+vetor:  .word 10,9,8,7,6,5,4,3,2,1
 
 .text	
 MAIN:
@@ -23,6 +23,7 @@ MAIN:
 	ADD X7, XZR, XZR
 	
 LOOP:
+	
 	LDUR X3, [X1, 0] //CARREGO N
 	//LDUR X4, [X1, 8] //CARREGO N+1
 	LDUR X4, [X1, 4] //CARREGO N+1
@@ -40,7 +41,9 @@ RETLOOP:
 		
 	SUBI X2, X2, 1 //DECREMENTANDO CONTADOR
 	
-	CBZ X2, AUX //VERIFICANDO SE ESTAMOS NO FINAL DO VETOR
+	CBZ X2, 10 //VERIFICANDO SE ESTAMOS NO FINAL DO VETOR
+	// SUBI XZR,X2,0
+	// B.EQ AUX
 	
 	B LOOP
 
@@ -63,15 +66,16 @@ SWAP:
 	
 	B RETLOOP
 
-AUX:
+AUX:	
 	SUBI X8, X7, 1
-	CBZ X8, EXITLOOP
+	CBZ X8, 2
 	
 	B END //VETOR ESTÁ ORDENADO
 
 EXITLOOP:
 	
-	ADD X1, XZR, XZR
+	//ADD X1, XZR, XZR
+	LDA X1, vetor
 	ADDI X2, XZR, size
 	
 	B LOOP
